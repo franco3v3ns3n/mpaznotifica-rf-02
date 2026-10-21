@@ -22,7 +22,7 @@ import kotlinx.coroutines.flow.asStateFlow
  * negocio del caso está vacía a propósito y marcada con TODO(equipo), citando el módulo de
  * Requerimientos_DSY1105-007 al que corresponde. Mientras no se implemente:
  *  - el login siempre rechaza (usar "Modo desarrollo" en la pantalla de login),
- *  - cualquier perfil ve todos los alcances y tipos (sin restricción por perfil),
+ *  - los tipos y alcances se restringen por perfil (RF-02); falta validar permisos al enviar,
  *  - enviar un comunicado o cambiar el canal de un apoderado no hace nada,
  *  - los filtros del historial no filtran.
  */
@@ -85,20 +85,26 @@ class MpazNotificaViewModel : ViewModel() {
     // =====================================================================
 
     /**
-     * TODO(equipo): devolver solo los alcances que el perfil puede usar.
-     * RF: "restringir las opciones de emisión según el perfil autenticado".
-     * Regla de negocio: un Profesor/a Jefe no puede emitir a "colegio completo" ni a un curso
-     * distinto al propio (alcance sobre talleres pendiente de confirmar con el CITT).
-     * Hoy devuelve los cuatro alcances para cualquier perfil.
+     * RF-02: alcances disponibles según el perfil; sin usuario no hay opciones.
+     * SUP-03 vigente: Profesor/a Jefe no emite a talleres, pendiente de confirmar con el CITT.
+     * La restricción al curso propio y la validación antes del envío corresponden a otros RF.
      */
-    fun alcancesPermitidos(usuario: Usuario?): List<AlcanceEnvio> = AlcanceEnvio.entries.toList()
+    fun alcancesPermitidos(usuario: Usuario?): List<AlcanceEnvio> = when (usuario?.perfil) {
+        Perfil.INSPECTORIA_GENERAL -> AlcanceEnvio.entries.toList()
+        Perfil.PROFESOR_JEFE -> listOf(AlcanceEnvio.CURSO, AlcanceEnvio.APODERADO_INDIVIDUAL)
+        null -> emptyList()
+    }
 
     /**
-     * TODO(equipo): devolver solo los tipos de comunicación que el perfil puede emitir.
-     * Criterio de éxito del caso: un Profesor/a Jefe no puede enviar circulares institucionales,
-     * solo lo referente a su curso. Hoy devuelve todos los tipos.
+     * RF-02: tipos disponibles según el perfil; sin usuario no hay opciones.
+     * SUP-04 vigente: Profesor/a Jefe usa Pedagógica y Citación, pendiente de confirmar
+     * con el CITT. El filtrado no reemplaza la validación de permisos antes del envío.
      */
-    fun tiposPermitidos(usuario: Usuario?): List<TipoComunicacion> = TipoComunicacion.entries.toList()
+    fun tiposPermitidos(usuario: Usuario?): List<TipoComunicacion> = when (usuario?.perfil) {
+        Perfil.INSPECTORIA_GENERAL -> TipoComunicacion.entries.toList()
+        Perfil.PROFESOR_JEFE -> listOf(TipoComunicacion.PEDAGOGICA, TipoComunicacion.CITACION)
+        null -> emptyList()
+    }
 
     /**
      * TODO(equipo): opciones de destino según el alcance, respetando el perfil (por ejemplo, un

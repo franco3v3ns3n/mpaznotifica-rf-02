@@ -45,7 +45,6 @@ import com.mpaznotifica.app.viewmodel.MpazNotificaViewModel
  * alerta visual al terminar (RNF del caso).
  *
  * La pantalla está completa; lo pendiente está en el ViewModel (TODO del equipo):
- *  - tiposPermitidos() / alcancesPermitidos() / destinosPara(): hoy no restringen por perfil;
  *  - validarComunicado(): hoy no valida;
  *  - enviarComunicado(): hoy no registra ni simula el despacho.
  */
